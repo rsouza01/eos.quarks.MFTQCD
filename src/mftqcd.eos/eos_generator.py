@@ -90,8 +90,8 @@ def fFuncMain():
 
     print eos.eos_quark_masses
 
-    # divisoes = 36 # original
-    divisoes = 10 # pra testes
+    divisoes = 36 # original
+    # divisoes = 10 # pra testes
     for rho in np.linspace(0.15, 0.50, divisoes):
         
         fsolve_parameters = [rho,
@@ -100,30 +100,28 @@ def fFuncMain():
                              eos.eos_quark_masses[qcd.Quarks.strange.value],
                              eos.electron_mass]
 
-        # ku, kd, ks, ke = fsolve(quarks_momenta, (1, 1, 1, 1), fsolve_parameters).tolist()
-        # print rho, ku, kd, ks, ke
-        
-
-        k_solution = fsolve(eos.quarks_momenta, (1, 1, 1, .1), fsolve_parameters).tolist()
+        # particles_momenta = [k_u, k_d, k_s, k_e]
+        particles_momenta = fsolve(eos.quarks_momenta, (1, 1, 1, .1), fsolve_parameters).tolist()
 
         dynamic_mass_gluon = 1
         qcd_coupling_g = 1
 
-
+        quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
+        electron_momentum = np.asarray(particles_momenta[-1])   # k_e
 
         # energy = eos.eos_energy(rho, qcd_coupling_g, B_QCD, dynamic_mass_gluon, k_solution)
         # pressure = eos.eos_pressure(rho, qcd_coupling_g, B_QCD, dynamic_mass_gluon, k_solution)
         # print energy, pressure
 
-        # bag_constant = (((nucleons_masses[Nucleons.neutron.value]*rho)-(eq + ee - pq - pe)) /2);
-        # energy_minus_pressure = \
-        #    (eos.energy_quarks(rho,  k_solution[:3]) + eos.energy_quarks(rho,  k_solution[-1])) - \
-        #    (eos.pressure_quarks(rho,  k_solution[:3]) + eos.pressure_quarks(rho,  k_solution[-1]))
+        energy_minus_pressure = \
+            (eos.energy_quarks(rho,  quarks_momenta) + eos.energy_quarks(rho,  electron_momentum)) - \
+            (eos.pressure_quarks(rho,  quarks_momenta) + eos.pressure_quarks(rho,  electron_momentum))
 
-        B_QCD = ((nucleons_masses[Nucleons.neutron.value]*rho)-(energy_minus_pressure)) /2.;
+        #energy_minus_pressure = 1
+        B_QCD = ((eos.neutron_mass*rho)-(energy_minus_pressure)) /2.;
 
 
-        i_line = ([rho] + k_solution + [B_QCD])
+        i_line = ([rho] + particles_momenta + [B_QCD])
 
         number_output = 6
         output_formaters = "{: >20} " * number_output
