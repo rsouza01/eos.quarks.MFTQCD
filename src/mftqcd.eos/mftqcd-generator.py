@@ -16,7 +16,6 @@ from datetime import datetime
 """
 Escolha um ou outro.
 """
-#import eos_generator_from_fit as eos
 import eos_generator as eos
 
 import sys

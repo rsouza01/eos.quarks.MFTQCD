@@ -8,7 +8,7 @@
 import numpy as np
 import scipy.special as scps
 
-import Atomic_Constants as ac
+import atomic_constants as ac
 import scipy
 import math
 from enum import Enum
@@ -25,6 +25,7 @@ fm = 5.07e-3
 '''
 Here come the nucleons.
 '''
+
 class Nucleons(Enum):
     proton = 0
     neutron = 1
@@ -49,7 +50,6 @@ Source: https://en.wikipedia.org/wiki/Quark :-(
 """
 quark_masses = np.array([5, 7, 150, 1290, 4200, 173000]) * fm
 
-quark_fermi_momenta = np.array([1, 1, 1, 1, 1, 1])
 
 
 class Leptons(Enum):
@@ -118,21 +118,22 @@ def eos_energy(rho, dynamic_gluon_mass, particles_momenta):
     return varepsilon
     
 
-def energy_quarks(rho, quark_fermi_momenta):
+def energy_quarks(rho, quark_momenta):
 
-    mu_quarks = mu(quark_fermi_momenta, eos_quark_masses)
+    mu_quarks = mu(quark_momenta, eos_quark_masses)
 
     varepsilon = 3 * gamma_Q / (2. * math.pi ** 2.) * \
                  np.sum(
-                     quark_fermi_momenta ** 3. * mu_quarks / 4. +
-                     eos_quark_masses ** 2. * quark_fermi_momenta * mu_quarks / 8. -
-                     eos_quark_masses ** 4. / 8. * np.log(quark_fermi_momenta + mu_quarks) +
+                     quark_momenta ** 3. * mu_quarks / 4. +
+                     eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. -
+                     eos_quark_masses ** 4. / 8. * np.log(quark_momenta + mu_quarks) +
                      (eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.)) 
 
     return varepsilon
 
 
 def energy_electrons(rho, electron_momentum):
+
     mu_electron = mu(electron_momentum, electron_mass)
 
     varepsilon = gamma_Q / (2. * math.pi ** 2.) * \
@@ -148,23 +149,65 @@ def energy_electrons(rho, electron_momentum):
 """
 Pressure, parameterized by the fermi momenta.
 """
-def pressure_q(rho, dynamic_gluon_mass, particles_momenta):
+
+def eos_pressure(rho, dynamic_gluon_mass, particles_momenta):
+    # particles_momenta = [k_u, k_d, k_s, k_e]
+
+    quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
+    electron_momentum = np.asarray(particles_momenta[-1])   # k_e
+
+    pressure = (27. * qcd_coupling_g ** 2. / (16 * dynamic_gluon_mass ** 2.)) * rho ** 2. - \
+                 B_QCD + \
+                pressure_quarks(rho, quarks_momenta) + pressure_electron(rho, electron_momentum)
+                     
+    return pressure
+    
+    
+def pressure_quarks(rho, quark_momenta):
+
+    mu_quarks = mu(quark_momenta, eos_quark_masses)
+    
+    pressure = gamma_Q / (2. * math.pi ** 2.) * \
+        np.sum(
+        quark_momenta ** 3. * mu_quarks / 4. -
+        3.*eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. + \
+        3.*eos_quark_masses ** 4. / 8. * np.log(quark_momenta + mu_quarks) - \
+        (3.*eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.))
+
+    return pressure
+
+def pressure_electron(rho, electron_momentum):
+
+    mu_electron = mu(electron_momentum, electron_mass)
+
+    pressure = gamma_Q / (6. * math.pi ** 2.) * \
+        ( \
+            electron_momentum ** 3. * mu_electron / 4. - \
+            3.*electron_mass ** 2. * electron_momentum * mu_electron / 8. + \
+            3.*electron_mass ** 4. / 8. * np.log(electron_momentum + mu_electron) - \
+            (3.*electron_mass ** 4. / 16.) * np.log(electron_mass ** 2.))
+
+
+    return pressure
+
+
+def pressure_all_terms(rho, dynamic_gluon_mass, particles_momenta):
 
     # particles_momenta = [k_u, k_d, k_s, k_e]
     quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
     electron_momentum = np.asarray(particles_momenta[-1])   # k_e
 
-    mu_quarks = mu(quark_fermi_momenta, eos_quark_masses)
+    mu_quarks = mu(quarks_momenta, eos_quark_masses)
     mu_electron = mu(electron_momentum, electron_mass)
 
     pressure = (27. * qcd_coupling_g ** 2. / (16 * dynamic_gluon_mass ** 2.)) * rho ** 2. - \
                  B_QCD + \
-                 gamma_Q / (2. * math.pi ** 2.) * \
-                 np.sum(
-                     quark_fermi_momenta ** 3. * mu_quarks / 4. -
-                     3.*eos_quark_masses ** 2. * quark_fermi_momenta * mu_quarks / 8. + \
-                     3.*eos_quark_masses ** 4. / 8. * np.log(quark_fermi_momenta + mu_quarks) - \
-                     (3.*eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.)) + \
+                gamma_Q / (2. * math.pi ** 2.) * \
+                        np.sum(
+                        quarks_momenta ** 3. * mu_quarks / 4. -
+                        3.*eos_quark_masses ** 2. * quarks_momenta * mu_quarks / 8. + \
+                        3.*eos_quark_masses ** 4. / 8. * np.log(quarks_momenta + mu_quarks) - \
+                        (3.*eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.)) + \
                  gamma_Q / (6. * math.pi ** 2.) * \
                  ( \
                      electron_momentum ** 3. * mu_electron / 4. - \
@@ -238,9 +281,13 @@ def fFuncMain():
 
         k_solution = fsolve(quarks_momenta, (1, 1, 1, .1), fsolve_parameters).tolist()
 
-        energy = eos_energy(rho, 1, k_solution)
-        print energy
+        # energy = eos_energy(rho, 1, k_solution)
+        # print energy
 
+        _pressure = pressure_all_terms(rho, 1, k_solution)
+        _eos_pressure = eos_pressure(rho, 1, k_solution)
+        
+        print _pressure, _eos_pressure, _pressure -  _eos_pressure
 
         # bag_constant = (((nucleons_masses[Nucleons.neutron.value]*rho)-(eq + ee - pq - pe)) /2);
         bag_constant = 1
