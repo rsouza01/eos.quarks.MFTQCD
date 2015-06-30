@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 # mftqcd.eos - MFTQCD Equation of State generator
-# Copyright (C) 2002015  Rodrigo Alvares de Souza <rsouza01@gmail.com>
+# Copyright (C) 2015  Rodrigo Alvares de Souza <rsouza01@gmail.com>
 
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -20,29 +20,22 @@
 # 02110-1301, USA.
 
 
-#================================================
+# ================================================
 # Authors:  
-#		Rodrigo Souza 
-#		<rsouza01@gmail.com>
-#       2015-06-07
-#================================================
+# 		Rodrigo Souza
+# 		<rsouza01@gmail.com>
+#        2015-06-07
+# ================================================
 
 import numpy as np
 import mftqcd_eos as eos
-import scipy.special as scps
-
-import atomic_constants as ac
 import qcd
-import scipy
-import math
 
 from scipy.optimize import fsolve
 
-
-
-#================================================
-#Constants
-#================================================
+# ================================================
+# Constants
+# ================================================
 number_output = 6
 output_formaters = "{: >20} "*number_output
     
@@ -52,22 +45,21 @@ output_formaters = "{: >20} "*number_output
 Quark degeneracy factor
 """
 
+
 def println(message):
-	print message
+    print message
 
 
-    
 def print_program_header():
-    println ("="*125)
-    println (" "* 45 + " MFTQCD EOS file generator")
-    println ("="*125)
+    println("=" * 125)
+    println(" " * 45 + " MFTQCD EOS file generator")
+    println("=" * 125)
 
-    
+
 def print_header():
-        
     header = ["rho", "ku", "kd", "ks", "ke", "bag"]
 
-    separator = "="*20
+    separator = "=" * 20
     separators = [separator] * len(header)
 
     print(output_formaters.format(*separators))
@@ -78,9 +70,9 @@ def print_header():
 def print_footer():
     print_header()   
 
-#================================================
-#FUNCTION MAIN
-#================================================
+# ================================================
+# FUNCTION MAIN
+# ================================================
 
 
 def fFuncMain():
@@ -117,14 +109,11 @@ def fFuncMain():
             (eos.energy_quarks(rho,  quarks_momenta) + eos.energy_quarks(rho,  electron_momentum)) - \
             (eos.pressure_quarks(rho,  quarks_momenta) + eos.pressure_quarks(rho,  electron_momentum))
 
-        #energy_minus_pressure = 1
-        B_QCD = ((eos.neutron_mass*rho)-(energy_minus_pressure)) /2.;
-
+        # energy_minus_pressure = 1
+        B_QCD = ((eos.neutron_mass*rho)-(energy_minus_pressure)) /2.
 
         i_line = ([rho] + particles_momenta + [B_QCD])
 
-        number_output = 6
-        output_formaters = "{: >20} " * number_output
         print(output_formaters.format(*i_line))
 
     print_footer()
