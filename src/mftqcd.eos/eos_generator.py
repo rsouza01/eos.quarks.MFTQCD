@@ -20,23 +20,24 @@
 # 02110-1301, USA.
 
 
-# ================================================
+# ================================================================================================
 # Authors:  
 # 		Rodrigo Souza
 # 		<rsouza01@gmail.com>
 #        2015-06-07
-# ================================================
+# ================================================================================================
 
 import numpy as np
 import mftqcd_eos as eos
 import qcd
+import cmath
 
 from scipy.optimize import fsolve
 
-# ================================================
+# ================================================================================================
 # Constants
-# ================================================
-number_output = 6
+# ================================================================================================
+number_output = 8
 output_formaters = "{: >20} "*number_output
     
 
@@ -57,7 +58,7 @@ def print_program_header():
 
 
 def print_header():
-    header = ["rho", "ku", "kd", "ks", "ke", "bag"]
+    header = ["rho", "ku", "kd", "ks", "ke", "B_QCD", "razao", "energiaQCD"]
 
     separator = "=" * 20
     separators = [separator] * len(header)
@@ -70,9 +71,19 @@ def print_header():
 def print_footer():
     print_header()   
 
-# ================================================
+
+def format_imaginary(number):
+    if number.imag != 0:
+        return "Complex"
+    else:
+        #return '%.7e' % number.real
+        return number.real
+
+
+
+# ================================================================================================
 # FUNCTION MAIN
-# ================================================
+# ================================================================================================
 
 
 def fFuncMain():
@@ -93,7 +104,8 @@ def fFuncMain():
                              eos.electron_mass]
 
         # particles_momenta = [k_u, k_d, k_s, k_e]
-        particles_momenta = fsolve(eos.quarks_momenta, (1, 1, 1, .1), fsolve_parameters).tolist()
+        # TODO: Need to improve precision
+        particles_momenta = fsolve(eos.quarks_momenta, (1.1, 1.25, 1, .12), fsolve_parameters).tolist()
 
         dynamic_mass_gluon = 1
         qcd_coupling_g = 1
@@ -105,14 +117,19 @@ def fFuncMain():
         # pressure = eos.eos_pressure(rho, qcd_coupling_g, B_QCD, dynamic_mass_gluon, k_solution)
         # print energy, pressure
 
-        energy_minus_pressure = \
-            (eos.energy_quarks(rho,  quarks_momenta) + eos.energy_quarks(rho,  electron_momentum)) - \
-            (eos.pressure_quarks(rho,  quarks_momenta) + eos.pressure_quarks(rho,  electron_momentum))
+        pressure_q = eos.pressure_quarks(rho,  quarks_momenta)
+        pressure_e = eos.pressure_quarks(rho,  electron_momentum)
 
-        # energy_minus_pressure = 1
-        B_QCD = ((eos.neutron_mass*rho)-(energy_minus_pressure)) /2.
+        energy_q = eos.energy_quarks(rho,  quarks_momenta)
+        energy_e = eos.energy_electrons(rho,  electron_momentum)
 
-        i_line = ([rho] + particles_momenta + [B_QCD])
+        B_QCD = ((eos.neutron_mass*rho)-((energy_q + energy_e) - (pressure_q + pressure_e))) /2.
+
+        razao = cmath.sqrt((B_QCD - (pressure_q + pressure_e))/((27./16.)* eos.fator1*rho**2.))
+
+        energiaQCD = (27/(16))* eos.fator1*(razao*razao)*rho*rho + B_QCD + energy_q + energy_e
+
+        i_line = ([rho] + particles_momenta + [B_QCD] + [format_imaginary(razao)] + [format_imaginary(energiaQCD/rho)])
 
         print(output_formaters.format(*i_line))
 

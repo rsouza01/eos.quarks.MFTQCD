@@ -25,21 +25,24 @@ import qcd
 import math
 
 
-#================================================
+# ================================================================================================
 # CONSTANTS
-#================================================
+# ================================================================================================
 
 eos_quark_masses = qcd.quark_masses[:3]
 electron_mass = qcd.lepton_masses[qcd.Leptons.electron.value]
 neutron_mass = qcd.nucleons_masses[qcd.Nucleons.neutron.value]
 
 
-fator1 = 1/((5.07e-3)**3.)
-fator2 = 1/(5.07e-3)
+fator_quarks = 1./3.
+fator_eletrons = 1./3.
 
-#================================================
+fator1 = 1./((5.07e-3)**3.)
+fator2 = 1./(5.07e-3)
+
+# ================================================================================================
 # FUNCTIONS
-#================================================
+# ================================================================================================
 
 def mu(K_F_i, m_i):
 	return np.sqrt(K_F_i**2. + m_i ** 2.)
@@ -50,26 +53,25 @@ Energy
 
 def eos_energy(rho, qcd_coupling_g, B_QCD, dynamic_gluon_mass, quarks_momenta, electron_momentum):
 
-    varepsilon = (27. * qcd_coupling_g ** 2. / (16 * dynamic_gluon_mass ** 2.)) * rho ** 2. + \
+    varepsilon = (fator1 * 27. * qcd_coupling_g ** 2. / (16 * dynamic_gluon_mass ** 2.)) * rho ** 2. + \
                  B_QCD + \
                  energy_quarks(rho, quarks_momenta) + \
                  energy_electrons(rho, electron_momentum)  # last item
 
     return varepsilon
-    
+
 
 def energy_quarks(rho, quark_momenta):
-    
     gamma_Q = 6.
 
     mu_quarks = mu(quark_momenta, eos_quark_masses)
 
-    varepsilon = 3 * gamma_Q / (2. * math.pi ** 2.) * \
+    varepsilon = fator_quarks * 3. * gamma_Q / (2. * math.pi ** 2.) * fator2 * \
                  np.sum(
                      quark_momenta ** 3. * mu_quarks / 4. +
                      eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. -
                      eos_quark_masses ** 4. / 8. * np.log(quark_momenta + mu_quarks) +
-                     (eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.)) 
+                     (eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.))
 
     return varepsilon
 
@@ -80,7 +82,7 @@ def energy_electrons(rho, electron_momentum):
 
     mu_electron = mu(electron_momentum, electron_mass)
 
-    varepsilon = gamma_E / (2. * math.pi ** 2.) * \
+    varepsilon = gamma_E / (2. * math.pi ** 2.) * fator2 *\
                  (
                      electron_momentum ** 3. * mu_electron / 4. +
                      electron_mass ** 2. * electron_momentum * mu_electron / 8. -
@@ -109,7 +111,7 @@ def pressure_quarks(rho, quark_momenta):
 
     mu_quarks = mu(quark_momenta, eos_quark_masses)
     
-    pressure = gamma_Q / (2. * math.pi ** 2.) * \
+    pressure = fator_quarks * gamma_Q / (2. * math.pi ** 2.) * fator2 * \
         np.sum(
         quark_momenta ** 3. * mu_quarks / 4. -
         3.*eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. + \
@@ -124,7 +126,7 @@ def pressure_electron(rho, electron_momentum):
     
     mu_electron = mu(electron_momentum, electron_mass)
 
-    pressure = gamma_E / (6. * math.pi ** 2.) * \
+    pressure = gamma_E / (6. * math.pi ** 2.) * fator2 * \
         ( \
             electron_momentum ** 3. * mu_electron / 4. - \
             3.*electron_mass ** 2. * electron_momentum * mu_electron / 8. + \
