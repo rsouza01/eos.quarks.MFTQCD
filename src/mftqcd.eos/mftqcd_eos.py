@@ -37,22 +37,22 @@ neutron_mass = qcd.nucleons_masses[qcd.Nucleons.neutron.value]
 fator_quarks = 1./3.
 fator_eletrons = 1./3.
 
-fator1 = 1./((5.07e-3)**3.)
-fator2 = 1./(5.07e-3)
+fator1 = 1./(5.07e-3**3.)
+fator2 = 1./5.07e-3
 
 # ================================================================================================
 # FUNCTIONS
 # ================================================================================================
 
-def mu(K_F_i, m_i):
-	return np.sqrt(K_F_i**2. + m_i ** 2.)
+def mu(k, m):
+    return np.sqrt(k**2. + m**2.)
 
 """
 Energy
 """
 
-def eos_energy(rho, qcd_coupling_g, B_QCD, dynamic_gluon_mass, quarks_momenta, electron_momentum):
 
+def eos_energy(rho, qcd_coupling_g, B_QCD, dynamic_gluon_mass, quarks_momenta, electron_momentum):
     varepsilon = (fator1 * 27. * qcd_coupling_g ** 2. / (16 * dynamic_gluon_mass ** 2.)) * rho ** 2. + \
                  B_QCD + \
                  energy_quarks(rho, quarks_momenta) + \
@@ -62,6 +62,7 @@ def eos_energy(rho, qcd_coupling_g, B_QCD, dynamic_gluon_mass, quarks_momenta, e
 
 
 def energy_quarks(rho, quark_momenta):
+
     gamma_Q = 6.
 
     mu_quarks = mu(quark_momenta, eos_quark_masses)
@@ -127,10 +128,10 @@ def pressure_electron(rho, electron_momentum):
     mu_electron = mu(electron_momentum, electron_mass)
 
     pressure = gamma_E / (6. * math.pi ** 2.) * fator2 * \
-        ( \
-            electron_momentum ** 3. * mu_electron / 4. - \
-            3.*electron_mass ** 2. * electron_momentum * mu_electron / 8. + \
-            3.*electron_mass ** 4. / 8. * np.log(electron_momentum + mu_electron) - \
+        (
+            electron_momentum ** 3. * mu_electron / 4. -
+            3.*electron_mass ** 2. * electron_momentum * mu_electron / 8. +
+            3.*electron_mass ** 4. / 8. * np.log(electron_momentum + mu_electron) -
             (3.*electron_mass ** 4. / 16.) * np.log(electron_mass ** 2.))
 
 
@@ -138,17 +139,16 @@ def pressure_electron(rho, electron_momentum):
 
 def quarks_momenta(p, parameters):
 
-    # Variaveis
+    # Variables
     ku, kd, ks, ke = p
 
-    # Parametros
+    # Parameters
     rho, mu, md, ms, me = parameters
 
-    # Lista de 
     return (
         ku**3 + kd**3 + ks**3 - 3*math.pi**2 * rho,
         2*ku**3 - kd**3 - ks**3 - ke**3, 
         kd**2 + md**2 -  ks**2 - ms**2, 
-        (ku**2 + mu**2)**(.5)  + (ke**2 + me**2)**(.5) - (ks**2 + ms**2)**(.5)
+        (ku**2 + mu**2)**(.5) + (ke**2 + me**2)**(.5) - (ks**2 + ms**2)**(.5)
     )
 

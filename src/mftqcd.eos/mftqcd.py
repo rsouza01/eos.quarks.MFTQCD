@@ -31,8 +31,10 @@ import numpy as np
 import mftqcd_eos as eos
 import qcd
 import cmath
+import util
 
 from scipy.optimize import fsolve
+import mftqcd_gen as gen
 
 # ================================================================================================
 # Constants
@@ -51,9 +53,9 @@ def println(message):
     print message
 
 
-def print_program_header():
+def print_program_header(program_function):
     println("=" * 125)
-    println(" " * 45 + " MFTQCD EOS file generator")
+    println(" " * 45 + " MFTQCD EOS file generator - " + str(program_function))
     println("=" * 125)
 
 
@@ -72,13 +74,6 @@ def print_footer():
     print_header()   
 
 
-def format_imaginary(number):
-    if number.imag != 0:
-        return "Complex"
-    else:
-        #return '%.7e' % number.real
-        return number.real
-
 
 
 # ================================================================================================
@@ -86,15 +81,18 @@ def format_imaginary(number):
 # ================================================================================================
 
 
-def fFuncMain():
+def fFuncMain(function):
 
-    print_program_header()
+    print_program_header(function)
+
+    if function == 0:
+        gen.generateEoSTable()
+        return
+
     print_header()
 
-    print eos.eos_quark_masses
-
-    divisoes = 36 # original
-    # divisoes = 10 # pra testes
+    # divisoes = 36 # original
+    divisoes = 5 # pra testes
     for rho in np.linspace(0.15, 0.50, divisoes):
         
         fsolve_parameters = [rho,
@@ -129,7 +127,11 @@ def fFuncMain():
 
         energiaQCD = (27/(16))* eos.fator1*(razao*razao)*rho*rho + B_QCD + energy_q + energy_e
 
-        i_line = ([rho] + particles_momenta + [B_QCD] + [format_imaginary(razao)] + [format_imaginary(energiaQCD/rho)])
+        i_line = ([rho] +
+                  particles_momenta +
+                  [B_QCD] +
+                  [util.format_imaginary_to_real(razao)] +
+                  [util.format_imaginary_to_real(energiaQCD/rho)])
 
         print(output_formaters.format(*i_line))
 

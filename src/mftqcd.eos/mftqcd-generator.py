@@ -22,25 +22,74 @@
 
 from datetime import datetime
 
+import sys
+import getopt
+
 import mftqcd as eos
 
-# ================================================
-# Initialization Routines
-# ================================================
-initTime = datetime.now()
+
+def usage():
+    '''
+    Shows the program usage
+    :return:
+    '''
+    print (
+        "Usage: \n" +
+        "    mftqcd-generator.py -f=<gen|u|l>\n")
 
 
-# ================================================
+def get_cl_parameters(argv):
+    '''
+    Extracts the command line parameters.
+    :param argv:
+    :return:
+    '''
 
-eos.fFuncMain()
+    program_function = 0
 
-# ================================================
-# Finalization Routines
-# ================================================
+    try:
+        opts, args = getopt.getopt(argv, "hf:", ["help", "function="])
+    except getopt.GetoptError as err:
+        print(err)
+        usage()
+        sys.exit(2)
+
+    for opt, arg in opts:
+
+        if opt in ("-f", "--function"):
+            # Generate the EoS
+            if arg == "gen":
+                program_function = 0
+            # Upper window
+            elif arg == "u":
+                program_function = 1
+            # Lower window
+            elif arg == "l":
+                program_function = 2
+
+        elif opt == '-h':
+            usage()
+            exit(0)
+        else:
+            assert False, "Unhandled exception."
+
+    return program_function
+
+def main(argv):
+
+    initTime = datetime.now()
+
+    program_function = get_cl_parameters(argv)
+
+    eos.fFuncMain(program_function)
+
+    endTime = datetime.now()
+    print "\n\n\n================================================"
+    print "Time elapsed: %d ms." % ((endTime - initTime).microseconds)
+    print "Done!"
+    print "================================================"
 
 
-endTime = datetime.now()
-print "\n\n\n================================================"
-print "Time elapsed: %d ms." % ((endTime - initTime).microseconds)
-print "Done!"
-print "================================================"
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
