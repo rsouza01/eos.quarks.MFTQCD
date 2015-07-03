@@ -86,7 +86,7 @@ def fFuncMain(function):
     print_program_header(function)
 
     if function == 0:
-        gen.generateEoSTable()
+        gen.generateEoSTable(62, 1)
         return
 
     print_header()
