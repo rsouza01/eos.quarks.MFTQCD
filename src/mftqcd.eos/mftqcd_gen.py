@@ -35,58 +35,86 @@ import cmath
 import util
 
 from scipy.optimize import fsolve
-import mftqcd_gen as gen
 
 
 # ================================================================================================
 # Constants
 # ================================================================================================
-number_output = 2
-output_formaters = "{: >20} "*number_output
+header = ["rho", "energy", "pressure", "n_B", "mu_B", "n_u", "n_d", "n_s", "n_e"]
 
-def generateEoSTable(b_qcd, dynamic_mass_gluon):
+number_output = len(header)
 
-    print "generateEoSTable()"
+output_formaters = "{: >20} " * number_output
 
-    gh = dynamic_mass_gluon * .003658
+def print_header():
+    separator = "=" * 20
+    separators = [separator] * len(header)
+
+    print(output_formaters.format(*separators))
+    print(output_formaters.format(*header))
+    print(output_formaters.format(*separators))
 
 
-    divisoes = 441 # original
-    #divisoes = 10 # pra testes
-    for rho in np.linspace(0.10, 4.50, divisoes):
+def print_footer():
+    print_header()
+
+
+def generateEoSTable(b_qcd, g_mg_ratio):
+
+    print_header()
+
+    #divisoes = 441 # original
+    divisoes = 10 # pra testes
+    # for rho in np.linspace(4.5, 0.10, divisoes):
+    # for rho in np.linspace(0.15, .36, 21):
+    for rho in np.linspace(0.10, 4.5, divisoes):
 
         fsolve_parameters = [rho,
                              eos.eos_quark_masses[qcd.Quarks.up.value],
                              eos.eos_quark_masses[qcd.Quarks.down.value],
                              eos.eos_quark_masses[qcd.Quarks.strange.value],
                              eos.electron_mass]
-        # particles_momenta = [k_u, k_d, k_s, k_e]
+
         # TODO: Need to improve precision
-        particles_momenta = fsolve(eos.quarks_momenta, (1.1, 1.25, 1, .12), fsolve_parameters).tolist()
-        # particles_momenta = [1.1, 1.25, 1, .12]
+        # particles_momenta = [k_u, k_d, k_s, k_e]
+        particles_momenta = fsolve(func=eos.quarks_momenta,
+                                   x0=(1.1, 1.25, 1, .12),
+                                   args=fsolve_parameters).tolist()
 
         quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
         electron_momentum = np.asarray(particles_momenta[-1])   # k_e
 
-        pressure_q = eos.pressure_quarks(rho,  quarks_momenta)
-        pressure_e = eos.pressure_quarks(rho,  electron_momentum)
+        # pressure_q = eos.pressure_quarks(rho,  quarks_momenta)
+        # pressure_e = eos.pressure_quarks(rho,  electron_momentum)
+        pressure = eos.eos_pressure(rho, b_qcd, g_mg_ratio, quarks_momenta, electron_momentum)
 
-        energy_q = eos.energy_quarks(rho,  quarks_momenta)
-        energy_e = eos.energy_electrons(rho,  electron_momentum)
+        # energy_q = eos.energy_quarks(rho,  quarks_momenta)
+        # energy_e = eos.energy_electrons(rho,  electron_momentum)
+        energy = eos.eos_energy(rho, b_qcd, g_mg_ratio, quarks_momenta, electron_momentum)
 
-        fermip = pressure_e + pressure_q
-        fermie = energy_e + energy_q
+        particles_density = (1/(cmath.pi**3.) * np.asarray(particles_momenta)).tolist()
 
-        hardgluons = (27/(16)) * eos.fator1*((gh**2.)/(dynamic_mass_gluon*82.))*rho**2.
+        # print particles_density
+        # 4.5	4331.38 3682.455
 
-        pressaomit = - b_qcd + fermip
-        energiamit = - b_qcd + fermie
+        str_momenta = " ".join("{0:.4f}".format(momentum) for momentum in particles_density)
 
-        # Speed of sound
-        csoq = pressaomit / energiamit
+        particles_density_formated = ("{0:.4f}"*4).format(*particles_density)
 
+        # print particles_density_formated
+        # i_line = [1, 2, 3,4, 5, 6, 7]
+        n_baryons = np.sum(particles_density[0:3])
 
-        i_line = ([rho] + [pressure_q + pressure_e])
+        chem_potential = (energy + pressure)/(n_baryons**2.)
+
+        i_line = ([rho] +
+                  [energy] +
+                  [pressure] +
+                  [n_baryons] +
+                  [chem_potential] +
+                  particles_density
+                  )
 
         print(output_formaters.format(*i_line))
 
+    print_footer()

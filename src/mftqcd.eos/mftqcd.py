@@ -83,10 +83,13 @@ def print_footer():
 
 def fFuncMain(function):
 
+    b_qcd = 62
+    g_mg_ratio = .003658
+
     print_program_header(function)
 
     if function == 0:
-        gen.generateEoSTable(62, 1)
+        gen.generateEoSTable(b_qcd, g_mg_ratio)
         return
 
     print_header()
@@ -125,7 +128,7 @@ def fFuncMain(function):
 
         razao = cmath.sqrt((B_QCD - (pressure_q + pressure_e))/((27./16.)* eos.fator1*rho**2.))
 
-        energiaQCD = (27/(16))* eos.fator1*(razao*razao)*rho*rho + B_QCD + energy_q + energy_e
+        energiaQCD = (27/16)* eos.fator1*(razao*razao)*rho*rho + B_QCD + energy_q + energy_e
 
         i_line = ([rho] +
                   particles_momenta +

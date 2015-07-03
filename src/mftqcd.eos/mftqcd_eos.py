@@ -40,6 +40,11 @@ fator_eletrons = 1./3.
 fator1 = 1./(5.07e-3**3.)
 fator2 = 1./5.07e-3
 
+gamma_E = 2.
+gamma_Q = 6.
+
+
+
 # ================================================================================================
 # FUNCTIONS
 # ================================================================================================
@@ -52,43 +57,39 @@ Energy
 """
 
 
-def eos_energy(rho, qcd_coupling_g, B_QCD, dynamic_gluon_mass, quarks_momenta, electron_momentum):
-    varepsilon = (fator1 * 27. * qcd_coupling_g ** 2. / (16 * dynamic_gluon_mass ** 2.)) * rho ** 2. + \
-                 B_QCD + \
-                 energy_quarks(rho, quarks_momenta) + \
-                 energy_electrons(rho, electron_momentum)  # last item
+def eos_energy(rho, B_QCD, g_mg_ratio, quarks_momenta, electron_momentum):
+
+    varepsilon = (27. / 16.) * fator1 * g_mg_ratio ** 2. * rho ** 2. + B_QCD + \
+        energy_quarks(rho, quarks_momenta) + \
+        energy_electrons(rho, electron_momentum)
 
     return varepsilon
 
 
 def energy_quarks(rho, quark_momenta):
 
-    gamma_Q = 6.
-
     mu_quarks = mu(quark_momenta, eos_quark_masses)
 
     varepsilon = fator_quarks * 3. * gamma_Q / (2. * math.pi ** 2.) * fator2 * \
-                 np.sum(
-                     quark_momenta ** 3. * mu_quarks / 4. +
-                     eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. -
-                     eos_quark_masses ** 4. / 8. * np.log(quark_momenta + mu_quarks) +
-                     (eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.))
+        np.sum(
+            quark_momenta ** 3. * mu_quarks / 4. +
+            eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. -
+            eos_quark_masses ** 4. / 8. * np.log(quark_momenta + mu_quarks) +
+            (eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.))
 
     return varepsilon
 
 
 def energy_electrons(rho, electron_momentum):
 
-    gamma_E = 2.
-
     mu_electron = mu(electron_momentum, electron_mass)
 
     varepsilon = gamma_E / (2. * math.pi ** 2.) * fator2 *\
-                 (
-                     electron_momentum ** 3. * mu_electron / 4. +
-                     electron_mass ** 2. * electron_momentum * mu_electron / 8. -
-                     (electron_mass ** 4. / 8.) * np.log(electron_momentum + mu_electron) +
-                     (electron_mass ** 4. / 16.) * np.log(electron_mass ** 2.))
+        (
+            electron_momentum ** 3. * mu_electron / 4. +
+            electron_mass ** 2. * electron_momentum * mu_electron / 8. -
+            (electron_mass ** 4. / 8.) * np.log(electron_momentum + mu_electron) +
+            (electron_mass ** 4. / 16.) * np.log(electron_mass ** 2.))
 
     return varepsilon
 
@@ -97,10 +98,9 @@ def energy_electrons(rho, electron_momentum):
 Pressure
 """
 
-def eos_pressure(rho, qcd_coupling_g, B_QCD, dynamic_gluon_mass, quarks_momenta, electron_momentum):
+def eos_pressure(rho, B_QCD, g_mg_ratio, quarks_momenta, electron_momentum):
 
-    pressure = (27. * qcd_coupling_g ** 2. / (16 * dynamic_gluon_mass ** 2.)) * rho ** 2. - \
-                 B_QCD + \
+    pressure = (27./16.) * fator1 * g_mg_ratio**2. * rho ** 2. - B_QCD + \
                 pressure_quarks(rho, quarks_momenta) + pressure_electron(rho, electron_momentum)
                      
     return pressure
@@ -108,23 +108,19 @@ def eos_pressure(rho, qcd_coupling_g, B_QCD, dynamic_gluon_mass, quarks_momenta,
     
 def pressure_quarks(rho, quark_momenta):
 
-    gamma_Q = 6.
-
     mu_quarks = mu(quark_momenta, eos_quark_masses)
     
     pressure = fator_quarks * gamma_Q / (2. * math.pi ** 2.) * fator2 * \
         np.sum(
         quark_momenta ** 3. * mu_quarks / 4. -
-        3.*eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. + \
-        3.*eos_quark_masses ** 4. / 8. * np.log(quark_momenta + mu_quarks) - \
+        3.*eos_quark_masses ** 2. * quark_momenta * mu_quarks / 8. +
+        3.*eos_quark_masses ** 4. / 8. * np.log(quark_momenta + mu_quarks) -
         (3.*eos_quark_masses ** 4. / 16.) * np.log(eos_quark_masses ** 2.))
 
     return pressure
 
 def pressure_electron(rho, electron_momentum):
 
-    gamma_E = 2.
-    
     mu_electron = mu(electron_momentum, electron_mass)
 
     pressure = gamma_E / (6. * math.pi ** 2.) * fator2 * \
@@ -140,15 +136,15 @@ def pressure_electron(rho, electron_momentum):
 def quarks_momenta(p, parameters):
 
     # Variables
-    ku, kd, ks, ke = p
+    k_u, k_d, k_s, k_e = p
 
     # Parameters
-    rho, mu, md, ms, me = parameters
+    rho, m_u, m_d, m_s, m_e = parameters
 
     return (
-        ku**3 + kd**3 + ks**3 - 3*math.pi**2 * rho,
-        2*ku**3 - kd**3 - ks**3 - ke**3, 
-        kd**2 + md**2 -  ks**2 - ms**2, 
-        (ku**2 + mu**2)**(.5) + (ke**2 + me**2)**(.5) - (ks**2 + ms**2)**(.5)
+        k_u**3. + k_d**3. + k_s**3. - 3.*math.pi**2. * rho,
+        2.*k_u**3. - k_d**3. - k_s**3. - k_e**3.,
+        k_d**2. + m_d**2. - k_s**2. - m_s**2.,
+        (k_u**2. + m_u**2.)**.5 + (k_e**2. + m_e**2.)**.5 - (k_s**2. + m_s**2.)**.5
     )
 
