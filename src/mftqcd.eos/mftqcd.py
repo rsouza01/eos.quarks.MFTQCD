@@ -83,8 +83,8 @@ def print_footer():
 
 def fFuncMain(function):
 
-    b_qcd = 62
-    g_mg_ratio = .003658
+    b_qcd = 62.
+    g_mg_ratio = 0.003658
 
     print_program_header(function)
 

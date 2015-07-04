@@ -32,10 +32,11 @@ import numpy as np
 import mftqcd_eos as eos
 import qcd
 import cmath
+import scipy as sc
 import util
+from scipy import optimize
 
-from scipy.optimize import fsolve
-
+import scipy.optimize as sc
 
 # ================================================================================================
 # Constants
@@ -63,26 +64,50 @@ def generateEoSTable(b_qcd, g_mg_ratio):
 
     print_header()
 
-    #divisoes = 441 # original
-    divisoes = 10 # pra testes
-    # for rho in np.linspace(4.5, 0.10, divisoes):
+    # steps = 441 # original
+    steps = 10 # pra testes
     # for rho in np.linspace(0.15, .36, 21):
-    for rho in np.linspace(0.10, 4.5, divisoes):
+    # for rho in np.linspace(0.10, 4.5, divisoes):
+    for rho in np.linspace(4.5, 0.10, steps):
 
-        fsolve_parameters = [rho,
-                             eos.eos_quark_masses[qcd.Quarks.up.value],
-                             eos.eos_quark_masses[qcd.Quarks.down.value],
-                             eos.eos_quark_masses[qcd.Quarks.strange.value],
-                             eos.electron_mass]
+        quarks_momenta_parameters = [rho,
+            eos.eos_quark_masses[qcd.Quarks.up.value],
+            eos.eos_quark_masses[qcd.Quarks.down.value],
+            eos.eos_quark_masses[qcd.Quarks.strange.value],
+            eos.electron_mass]
 
-        # TODO: Need to improve precision
+        print quarks_momenta_parameters
+
+        initGuess = optimize.fmin(
+            func=eos.quarks_momenta,
+            x0=(2, 2, 2, 0.07),
+            args=tuple(quarks_momenta_parameters))
+
+        initGuess = (2, 2, 2, 0.07)
+
         # particles_momenta = [k_u, k_d, k_s, k_e]
-        particles_momenta = fsolve(func=eos.quarks_momenta,
-                                   x0=(1.1, 1.25, 1, .12),
-                                   args=fsolve_parameters).tolist()
+        particles_momenta = sc.fsolve(
+            func=eos.quarks_momenta,
+            x0=initGuess,
+            args=(rho,
+            eos.eos_quark_masses[qcd.Quarks.up.value],
+            eos.eos_quark_masses[qcd.Quarks.down.value],
+            eos.eos_quark_masses[qcd.Quarks.strange.value],
+            eos.electron_mass))
+
+
+        # 4.5	4331.38 3682.455 <= devia ser assim
+        # 4.5  10745.6854205      5773.05091956 <= está vindo assim
 
         quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
         electron_momentum = np.asarray(particles_momenta[-1])   # k_e
+
+        # Solução do sistema com rho = 4.5
+        # quarks_momenta = np.asarray([2.01, 2.08, 1.93])      # [k_u, k_d, k_s]
+        # electron_momentum = np.asarray(0.07)   # k_e
+
+
+        # print "Momenta = " + str(quarks_momenta) + str(electron_momentum)
 
         # pressure_q = eos.pressure_quarks(rho,  quarks_momenta)
         # pressure_e = eos.pressure_quarks(rho,  electron_momentum)
@@ -95,7 +120,6 @@ def generateEoSTable(b_qcd, g_mg_ratio):
         particles_density = (1/(cmath.pi**3.) * np.asarray(particles_momenta)).tolist()
 
         # print particles_density
-        # 4.5	4331.38 3682.455
 
         str_momenta = " ".join("{0:.4f}".format(momentum) for momentum in particles_density)
 

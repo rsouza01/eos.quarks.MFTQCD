@@ -33,7 +33,7 @@ class Nucleons(Enum):
     proton = 0
     neutron = 1
     
-nucleons_masses = np.array([938, 939])
+nucleons_masses = np.array([938., 939.])
 
 
 '''
@@ -51,7 +51,7 @@ class Quarks(Enum):
 Quarks masses
 Source: https://en.wikipedia.org/wiki/Quark :-(
 """
-quark_masses = np.array([5, 7, 150, 1290, 4200, 173000]) * fm
+quark_masses = np.array([5., 7., 150., 1290., 4200., 173000.]) * fm
 
 
 
@@ -67,4 +67,4 @@ class Leptons(Enum):
 Lepton masses.
 Source: https://en.wikipedia.org/wiki/Lepton :-(
 """
-lepton_masses = np.array([0.5, 106, 1777, 0, 0.17, 15.5]) * fm
+lepton_masses = np.array([0.5, 106., 1777., 0., 0.17, 15.5]) * fm
