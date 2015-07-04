@@ -76,24 +76,21 @@ def generateEoSTable(b_qcd, g_mg_ratio):
             eos.eos_quark_masses[qcd.Quarks.strange.value],
             eos.electron_mass]
 
-        print quarks_momenta_parameters
 
-        initGuess = optimize.fmin(
-            func=eos.quarks_momenta,
-            x0=(2, 2, 2, 0.07),
-            args=tuple(quarks_momenta_parameters))
+        # initGuess = optimize.fmin(
+        #     func=eos.quarks_momenta,
+        #     x0=(2, 2, 2, 0.07),
+        #     args=tuple(quarks_momenta_parameters))
 
         initGuess = (2, 2, 2, 0.07)
+
+        # fsolve is pure shit, it does not work!
 
         # particles_momenta = [k_u, k_d, k_s, k_e]
         particles_momenta = sc.fsolve(
             func=eos.quarks_momenta,
             x0=initGuess,
-            args=(rho,
-            eos.eos_quark_masses[qcd.Quarks.up.value],
-            eos.eos_quark_masses[qcd.Quarks.down.value],
-            eos.eos_quark_masses[qcd.Quarks.strange.value],
-            eos.electron_mass))
+            args=quarks_momenta_parameters)
 
 
         # 4.5	4331.38 3682.455 <= devia ser assim
