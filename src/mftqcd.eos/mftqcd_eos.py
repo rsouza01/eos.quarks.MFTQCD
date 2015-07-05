@@ -33,6 +33,7 @@ eos_quark_masses = qcd.quark_masses[:3]
 electron_mass = qcd.lepton_masses[qcd.Leptons.electron.value]
 neutron_mass = qcd.nucleons_masses[qcd.Nucleons.neutron.value]
 
+rho_global = 0
 
 fator_quarks = 1./3.
 fator_eletrons = 1./3.
@@ -43,13 +44,18 @@ fator2 = 1./5.07e-3
 gamma_Q = 6.
 gamma_E = 2.
 
-
-
 # ================================================================================================
 # FUNCTIONS
 # ================================================================================================
 
 def mu(k, m):
+    '''
+    Calculates the chemical potential.
+
+    :param k: Momemtum vector
+    :param m: Mass vector
+    :return: Chemical potential vector
+    '''
     return np.sqrt(k**2. + m**2.)
 
 """
@@ -58,15 +64,24 @@ Energy
 
 
 def eos_energy(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
+    '''
+    Energy density.
+    :param rho: Baryonic density
+    :param B_QCD: Bag constant
+    :param g_mg_ratio: g / m_G
+    :param p_quarks_momenta: Quarks momenta
+    :param p_electron_momentum: Electron momentum
+    :return:
+    '''
 
     ret = (27. / 16.) * fator1 * g_mg_ratio ** 2. * rho ** 2. + B_QCD + \
-        energy_quarks(rho, p_quarks_momenta) + \
-        energy_electrons(rho, p_electron_momentum)
+        energy_quarks(p_quarks_momenta) + \
+        energy_electrons(p_electron_momentum)
 
     return ret
 
 
-def energy_quarks(rho, p_quark_momenta):
+def energy_quarks(p_quark_momenta):
 
     mu_quarks = mu(p_quark_momenta, eos_quark_masses)
 
@@ -80,7 +95,7 @@ def energy_quarks(rho, p_quark_momenta):
     return ret
 
 
-def energy_electrons(rho, electron_momentum):
+def energy_electrons(electron_momentum):
 
     mu_electron = mu(electron_momentum, electron_mass)
 
@@ -99,14 +114,23 @@ Pressure
 """
 
 def eos_pressure(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
+    '''
+    Pressure.
+    :param rho: Baryonic density
+    :param B_QCD: Bag constant
+    :param g_mg_ratio: g / m_G
+    :param p_quarks_momenta: Quarks momenta
+    :param p_electron_momentum: Electron momentum
+    :return:
+    '''
 
     pressure = (27./16.) * fator1 * g_mg_ratio**2. * rho ** 2. - B_QCD + \
-        pressure_quarks(rho, p_quarks_momenta) + pressure_electron(rho, p_electron_momentum)
+        pressure_quarks(p_quarks_momenta) + pressure_electron(p_electron_momentum)
                      
     return pressure
     
     
-def pressure_quarks(rho, p_quark_momenta):
+def pressure_quarks(p_quark_momenta):
 
     mu_quarks = mu(p_quark_momenta, eos_quark_masses)
     
@@ -119,7 +143,7 @@ def pressure_quarks(rho, p_quark_momenta):
 
     return ret
 
-def pressure_electron(rho, p_electron_momentum):
+def pressure_electron(p_electron_momentum):
 
     mu_electron = mu(p_electron_momentum, electron_mass)
 
@@ -135,6 +159,13 @@ def pressure_electron(rho, p_electron_momentum):
 def quarks_momenta(p, parameters):
     '''
     Returns the four equations of the system that must be satisfied by the EoS.
+
+    The original equations from Mathematica:
+        NSolve[{ku^3 + kd^3 + ks^3 ==  3*Pi*Pi* rho,
+        2*ku^3 ==  kd^3 + ks^3 + ke^3,
+        kd^2 + md^2 == ks^2 + ms^2,
+        (ku^2 + mu^2)^(1/2)  + (ke^2 + me^2)^(1/2) == (ks^2 + ms^2)^(1/2)}]
+
     :param p: quarks + electron momenta
     :param parameters: density and masses
     :return: equations
@@ -144,7 +175,32 @@ def quarks_momenta(p, parameters):
     k_u, k_d, k_s, k_e = p
 
     # Parameters
-    rho, m_u, m_d, m_s, m_e = parameters
+    rho_B, m_u, m_d, m_s, m_e = parameters
+
+    return (
+        k_u**3. + k_d**3. + k_s**3. - 3.*math.pi**2. * rho_B,
+        2.*k_u**3. - k_d**3. - k_s**3. - k_e**3.,
+        k_d**2. + m_d**2. - k_s**2. - m_s**2.,
+        math.sqrt(k_u**2. + m_u**2.) + math.sqrt(k_e**2. + m_e**2.) - math.sqrt(k_s**2. + m_s**2.)
+    )
+
+def quarks_momenta_nopar(p):
+    '''
+    Returns the four equations of the system that must be satisfied by the EoS.
+    :param p: quarks + electron momenta
+    :param parameters: density and masses
+    :return: equations
+    '''
+
+    # Variables
+    k_u, k_d, k_s, k_e = p
+
+    # Parameters
+    rho = rho_global
+    m_u = eos_quark_masses[0]
+    m_d = eos_quark_masses[1]
+    m_s = eos_quark_masses[2]
+    m_e = electron_mass
 
     return (
         k_u**3. + k_d**3. + k_s**3. - 3.*math.pi**2. * rho,

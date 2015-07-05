@@ -70,21 +70,24 @@ def generateEoSTable(b_qcd, g_mg_ratio):
     # for rho in np.linspace(0.10, 4.5, divisoes):
     for rho in np.linspace(4.5, 0.10, steps):
 
-        quarks_momenta_parameters = [rho,
+        eos.rho_global = rho
+
+        quarks_momenta_parameters = [
+            rho,
             eos.eos_quark_masses[qcd.Quarks.up.value],
             eos.eos_quark_masses[qcd.Quarks.down.value],
             eos.eos_quark_masses[qcd.Quarks.strange.value],
             eos.electron_mass]
 
+        initGuess = [2.01, 2.08, 1.93, 0.07]
 
-        # initGuess = optimize.fmin(
-        #     func=eos.quarks_momenta,
-        #     x0=(2, 2, 2, 0.07),
-        #     args=tuple(quarks_momenta_parameters))
-
-        initGuess = (2, 2, 2, 0.07)
-
-        # fsolve is pure shit, it does not work!
+        # res = sc.minimize(
+        #     fun=eos.quarks_momenta,
+        #     x0=initGuess,
+        #     args=initGuess,
+        #     method='Nelder-Mead')
+        #
+        # initGuess = res.x
 
         # particles_momenta = [k_u, k_d, k_s, k_e]
         particles_momenta = sc.fsolve(
@@ -92,17 +95,17 @@ def generateEoSTable(b_qcd, g_mg_ratio):
             x0=initGuess,
             args=quarks_momenta_parameters)
 
+        # particles_momenta = sc.anderson(
+        #     eos.quarks_momenta_nopar,
+        #     initGuess)
 
         # 4.5	4331.38 3682.455 <= devia ser assim
         # 4.5  10745.6854205      5773.05091956 <= está vindo assim
 
+        # Solução do sistema com rho = 4.5
+        # particles_momenta = np.asarray([2.01, 2.08, 1.93, 0.07])
         quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
         electron_momentum = np.asarray(particles_momenta[-1])   # k_e
-
-        # Solução do sistema com rho = 4.5
-        # quarks_momenta = np.asarray([2.01, 2.08, 1.93])      # [k_u, k_d, k_s]
-        # electron_momentum = np.asarray(0.07)   # k_e
-
 
         # print "Momenta = " + str(quarks_momenta) + str(electron_momentum)
 
