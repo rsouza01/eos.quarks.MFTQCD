@@ -50,7 +50,7 @@ Quark degeneracy factor
 
 
 def println(message):
-    print message
+    print (message)
 
 
 def print_program_header(program_function):

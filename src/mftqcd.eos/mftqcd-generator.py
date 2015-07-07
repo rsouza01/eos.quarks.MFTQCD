@@ -84,10 +84,10 @@ def main(argv):
     eos.fFuncMain(program_function)
 
     endTime = datetime.now()
-    print "\n\n\n================================================"
-    print "Time elapsed: %d ms." % ((endTime - initTime).microseconds)
-    print "Done!"
-    print "================================================"
+    print ("\n\n\n================================================")
+    print ("Time elapsed: %d ms." % ((endTime - initTime).microseconds))
+    print ("Done!")
+    print ("================================================")
 
 
 

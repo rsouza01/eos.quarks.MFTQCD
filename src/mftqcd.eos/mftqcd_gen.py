@@ -41,7 +41,7 @@ import scipy.optimize as sc
 # ================================================================================================
 # Constants
 # ================================================================================================
-header = ["rho", "energy", "pressure", "n_B", "mu_B", "n_u", "n_d", "n_s", "n_e"]
+header = ["rho", "energy", "pressure", "n_B", "mu_B", "n_u", "n_d", "n_s", "n_e", "k_i"]
 
 number_output = len(header)
 
@@ -80,6 +80,7 @@ def generateEoSTable(b_qcd, g_mg_ratio):
             eos.electron_mass]
 
         initGuess = [2.01, 2.08, 1.93, 0.07]
+        #initGuess = [0., 0., 0., 0.]
 
         # res = sc.minimize(
         #     fun=eos.quarks_momenta,
@@ -95,9 +96,7 @@ def generateEoSTable(b_qcd, g_mg_ratio):
             x0=initGuess,
             args=quarks_momenta_parameters)
 
-        # particles_momenta = sc.anderson(
-        #     eos.quarks_momenta_nopar,
-        #     initGuess)
+        print ("particles_momenta => " + str(particles_momenta))
 
         # 4.5	4331.38 3682.455 <= devia ser assim
         # 4.5  10745.6854205      5773.05091956 <= está vindo assim
@@ -136,7 +135,8 @@ def generateEoSTable(b_qcd, g_mg_ratio):
                   [pressure] +
                   [n_baryons] +
                   [chem_potential] +
-                  particles_density
+                  particles_density +
+                  [str(particles_momenta)]
                   )
 
         print(output_formaters.format(*i_line))

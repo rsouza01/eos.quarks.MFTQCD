@@ -177,12 +177,14 @@ def quarks_momenta(p, parameters):
     # Parameters
     rho_B, m_u, m_d, m_s, m_e = parameters
 
-    return (
+    equations = (
         k_u**3. + k_d**3. + k_s**3. - 3.*math.pi**2. * rho_B,
         2.*k_u**3. - k_d**3. - k_s**3. - k_e**3.,
         k_d**2. + m_d**2. - k_s**2. - m_s**2.,
-        math.sqrt(k_u**2. + m_u**2.) + math.sqrt(k_e**2. + m_e**2.) - math.sqrt(k_s**2. + m_s**2.)
+        math.sqrt(k_u**2. + m_u**2.) + math.sqrt(k_e**2. + m_e**2.) - math.sqrt(k_s**2. + m_s**2.),
     )
+
+    return equations
 
 def quarks_momenta_nopar(p):
     '''
