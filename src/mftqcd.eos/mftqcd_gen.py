@@ -32,16 +32,13 @@ import numpy as np
 import mftqcd_eos as eos
 import qcd
 import cmath
-import scipy as sc
-import util
-from scipy import optimize
 
 import scipy.optimize as sc
 
 # ================================================================================================
 # Constants
 # ================================================================================================
-header = ["rho", "energy", "pressure", "n_B", "mu_B", "n_u", "n_d", "n_s", "n_e", "k_i"]
+header = ["rho", "energy", "pressure", "mu_B", "n_u", "n_d", "n_s", "n_e", "k_i"]
 
 number_output = len(header)
 
@@ -79,34 +76,16 @@ def generateEoSTable(b_qcd, g_mg_ratio):
             eos.eos_quark_masses[qcd.Quarks.strange.value],
             eos.electron_mass]
 
-        initGuess = [2.01, 2.08, 1.93, 0.07]
-        #initGuess = [0., 0., 0., 0.]
+        # Esse init guess funciona para todos os rho's dentro do range.
+        initGuess = [3., 3., 3., 0.04]
 
-        # res = sc.minimize(
-        #     fun=eos.quarks_momenta,
-        #     x0=initGuess,
-        #     args=initGuess,
-        #     method='Nelder-Mead')
-        #
-        # initGuess = res.x
-
-        # particles_momenta = [k_u, k_d, k_s, k_e]
         particles_momenta = sc.fsolve(
             func=eos.quarks_momenta,
             x0=initGuess,
             args=quarks_momenta_parameters)
 
-        print ("particles_momenta => " + str(particles_momenta))
-
-        # 4.5	4331.38 3682.455 <= devia ser assim
-        # 4.5  10745.6854205      5773.05091956 <= está vindo assim
-
-        # Solução do sistema com rho = 4.5
-        # particles_momenta = np.asarray([2.01, 2.08, 1.93, 0.07])
         quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
         electron_momentum = np.asarray(particles_momenta[-1])   # k_e
-
-        # print "Momenta = " + str(quarks_momenta) + str(electron_momentum)
 
         # pressure_q = eos.pressure_quarks(rho,  quarks_momenta)
         # pressure_e = eos.pressure_quarks(rho,  electron_momentum)
@@ -118,22 +97,15 @@ def generateEoSTable(b_qcd, g_mg_ratio):
 
         particles_density = (1/(cmath.pi**3.) * np.asarray(particles_momenta)).tolist()
 
-        # print particles_density
-
         str_momenta = " ".join("{0:.4f}".format(momentum) for momentum in particles_density)
 
         particles_density_formated = ("{0:.4f}"*4).format(*particles_density)
 
-        # print particles_density_formated
-        # i_line = [1, 2, 3,4, 5, 6, 7]
-        n_baryons = np.sum(particles_density[0:3])
-
-        chem_potential = (energy + pressure)/(n_baryons**2.)
+        chem_potential = (energy + pressure)/(rho)
 
         i_line = ([rho] +
                   [energy] +
                   [pressure] +
-                  [n_baryons] +
                   [chem_potential] +
                   particles_density +
                   [str(particles_momenta)]
