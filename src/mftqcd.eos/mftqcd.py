@@ -41,22 +41,18 @@ import mftqcd_gen as gen
 # ================================================================================================
 number_output = 8
 output_formaters = "{: >20} "*number_output
-    
-
-
-"""
-Quark degeneracy factor
-"""
 
 
 def println(message):
-    print (message)
+    print(message)
 
 
-def print_program_header(program_function):
-    println("=" * 125)
-    println(" " * 45 + " MFTQCD EOS file generator - " + str(program_function))
-    println("=" * 125)
+def print_program_header(program_function, b_qcd, g_mg_ratio):
+    println("=" * 100)
+    println("MFTQCD EOS file generator - " + str(program_function))
+    println("b_qcd = %f, g_mg_ratio = %f" % (b_qcd, g_mg_ratio))
+
+    println("=" * 100)
 
 
 def print_header():
@@ -73,22 +69,17 @@ def print_header():
 def print_footer():
     print_header()   
 
-
-
-
 # ================================================================================================
 # FUNCTION MAIN
 # ================================================================================================
 
 
-def fFuncMain(function):
+def func_main(function, b_qcd, g_mg_ratio):
 
-    b_qcd = 75.7
-    g_mg_ratio = 0.000657
+    # b_qcd = 80.
+    # g_mg_ratio = 0.0015
 
-
-
-    print_program_header(function)
+    print_program_header(function, b_qcd, g_mg_ratio)
 
     if function == 0:
         gen.generateEoSTable(b_qcd, g_mg_ratio)
@@ -96,8 +87,8 @@ def fFuncMain(function):
 
     print_header()
 
-    # divisoes = 36 # original
-    divisoes = 5 # pra testes
+    divisoes = 36  # original
+    # divisoes = 5 # pra testes
     for rho in np.linspace(0.15, 0.50, divisoes):
         
         fsolve_parameters = [rho,
@@ -126,17 +117,17 @@ def fFuncMain(function):
         energy_q = eos.energy_quarks(rho,  quarks_momenta)
         energy_e = eos.energy_electrons(rho,  electron_momentum)
 
-        B_QCD = ((eos.neutron_mass*rho)-((energy_q + energy_e) - (pressure_q + pressure_e))) /2.
+        b_qcd = ((eos.neutron_mass*rho)-((energy_q + energy_e) - (pressure_q + pressure_e))) / 2.
 
-        razao = cmath.sqrt((B_QCD - (pressure_q + pressure_e))/((27./16.)* eos.fator1*rho**2.))
+        razao = cmath.sqrt((b_qcd - (pressure_q + pressure_e))/((27./16.) * eos.fator1*rho**2.))
 
-        energiaQCD = (27/16)* eos.fator1*(razao*razao)*rho*rho + B_QCD + energy_q + energy_e
+        energia_qcd = (27/16) * eos.fator1*(razao*razao)*rho*rho + b_qcd + energy_q + energy_e
 
         i_line = ([rho] +
                   particles_momenta +
-                  [B_QCD] +
+                  [b_qcd] +
                   [util.format_imaginary_to_real(razao)] +
-                  [util.format_imaginary_to_real(energiaQCD/rho)])
+                  [util.format_imaginary_to_real(energia_qcd/rho)])
 
         print(output_formaters.format(*i_line))
 

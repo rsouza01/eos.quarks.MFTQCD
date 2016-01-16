@@ -68,13 +68,19 @@ def main(argv):
             FM3_TO_CM3              = 1e-39
             LIGHT_SPEED             = 2.998e10
 
-            
-            mass_density_cgs          = fields[ENERGY_DENSITY_COLUMN] * (MEV_TO_ERG/FM3_TO_CM3)/LIGHT_SPEED**2.
-            pressure_cgs                = fields[PRESSURE_DENSITY_COLUMN] * (MEV_TO_ERG/FM3_TO_CM3)
-            baryon_density_cgs          = fields[BARYON_DENSITY_COLUMN] * (1./FM3_TO_CM3)
-            chem_potential_density_cgs  = fields[CHEM_POTENTIAL_DENSITY_COLUMN] * (MEV_TO_ERG)
+            #mass_density_cgs          = fields[ENERGY_DENSITY_COLUMN] * (MEV_TO_ERG/FM3_TO_CM3)/LIGHT_SPEED**2.
+            #pressure_cgs                = fields[PRESSURE_DENSITY_COLUMN] * (MEV_TO_ERG/FM3_TO_CM3)
+            #baryon_density_cgs          = fields[BARYON_DENSITY_COLUMN] * (1./FM3_TO_CM3)
+            #chem_potential_density_cgs  = fields[CHEM_POTENTIAL_DENSITY_COLUMN] * (MEV_TO_ERG)
+            #print("{}, {}, {}, {}".format(mass_density_cgs, pressure_cgs, baryon_density_cgs, chem_potential_density_cgs))
 
-            print("{}, {}, {}, {}".format(mass_density_cgs, pressure_cgs, baryon_density_cgs, chem_potential_density_cgs))
+            #Mantem nuclear
+            mass_density_nuc          = fields[ENERGY_DENSITY_COLUMN]
+            pressure_nuc                = fields[PRESSURE_DENSITY_COLUMN]
+            baryon_density_nuc          = fields[BARYON_DENSITY_COLUMN]
+            chem_potential_density_nuc  = fields[CHEM_POTENTIAL_DENSITY_COLUMN]
+
+            print("{}, {}, {}, {}".format(mass_density_nuc, pressure_nuc, baryon_density_nuc, chem_potential_density_nuc))
 
 
     

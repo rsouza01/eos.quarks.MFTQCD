@@ -41,7 +41,7 @@ fator_eletrons = 1./3.
 fator1 = 1./(5.07e-3**3.)
 fator2 = 1./5.07e-3
 
-gamma_Q = 6.
+gamma_Q = 2.
 gamma_E = 2.
 
 # ================================================================================================
@@ -49,13 +49,13 @@ gamma_E = 2.
 # ================================================================================================
 
 def mu(k, m):
-    '''
+    """
     Calculates the chemical potential.
 
     :param k: Momemtum vector
     :param m: Mass vector
     :return: Chemical potential vector
-    '''
+    """
     return np.sqrt(k**2. + m**2.)
 
 """
@@ -64,7 +64,7 @@ Energy
 
 
 def eos_energy(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
-    '''
+    """
     Energy density.
     :param rho: Baryonic density
     :param B_QCD: Bag constant
@@ -72,7 +72,7 @@ def eos_energy(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
     :param p_quarks_momenta: Quarks momenta
     :param p_electron_momentum: Electron momentum
     :return:
-    '''
+    """
 
     ret = (27. / 16.) * fator1 * g_mg_ratio ** 2. * rho ** 2. + B_QCD + \
         energy_quarks(p_quarks_momenta) + \
@@ -113,8 +113,9 @@ def energy_electrons(electron_momentum):
 Pressure
 """
 
+
 def eos_pressure(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
-    '''
+    """
     Pressure.
     :param rho: Baryonic density
     :param B_QCD: Bag constant
@@ -122,7 +123,7 @@ def eos_pressure(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
     :param p_quarks_momenta: Quarks momenta
     :param p_electron_momentum: Electron momentum
     :return:
-    '''
+    """
 
     pressure = (27./16.) * fator1 * g_mg_ratio**2. * rho ** 2. - B_QCD + \
         pressure_quarks(p_quarks_momenta) + pressure_electron(p_electron_momentum)
@@ -143,6 +144,7 @@ def pressure_quarks(p_quark_momenta):
 
     return ret
 
+
 def pressure_electron(p_electron_momentum):
 
     mu_electron = mu(p_electron_momentum, electron_mass)
@@ -156,8 +158,9 @@ def pressure_electron(p_electron_momentum):
 
     return ret
 
+
 def quarks_momenta(p, parameters):
-    '''
+    """
     Returns the four equations of the system that must be satisfied by the EoS.
 
     The original equations from Mathematica:
@@ -169,7 +172,7 @@ def quarks_momenta(p, parameters):
     :param p: quarks + electron momenta
     :param parameters: density and masses
     :return: equations
-    '''
+    """
 
     # Variables
     k_u, k_d, k_s, k_e = p
@@ -186,13 +189,14 @@ def quarks_momenta(p, parameters):
 
     return equations
 
+
 def quarks_momenta_nopar(p):
-    '''
+    """
     Returns the four equations of the system that must be satisfied by the EoS.
     :param p: quarks + electron momenta
     :param parameters: density and masses
     :return: equations
-    '''
+    """
 
     # Variables
     k_u, k_d, k_s, k_e = p

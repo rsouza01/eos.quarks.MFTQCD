@@ -38,19 +38,22 @@ import scipy.optimize as sc
 # ================================================================================================
 # Constants
 # ================================================================================================
-header = ["rho", "energy", "pressure", "mu_B", "n_u", "n_d", "n_s", "n_e", "k_i"]
+# header = ["rho", "energy", "pressure", "mu_B", "n_u", "n_d", "n_s", "n_e", "k_i"]
+header = ["rho", "energy", "pressure", "mu_B"]
 
 number_output = len(header)
 
+output_formaters_header = "{: >20} " * number_output
 output_formaters = "{: >20} " * number_output
+
 
 def print_header():
     separator = "=" * 20
     separators = [separator] * len(header)
 
-    print(output_formaters.format(*separators))
-    print(output_formaters.format(*header))
-    print(output_formaters.format(*separators))
+    print(output_formaters_header.format(*separators))
+    print(output_formaters_header.format(*header))
+    print(output_formaters_header.format(*separators))
 
 
 def print_footer():
@@ -61,8 +64,8 @@ def generateEoSTable(b_qcd, g_mg_ratio):
 
     print_header()
 
-    # steps = 441 # original
-    steps = 10 # pra testes
+    steps = 45 # original
+    # steps = 10 # pra testes
     # for rho in np.linspace(0.15, .36, 21):
     # for rho in np.linspace(0.10, 4.5, divisoes):
     for rho in np.linspace(4.5, 0.10, steps):
@@ -77,11 +80,11 @@ def generateEoSTable(b_qcd, g_mg_ratio):
             eos.electron_mass]
 
         # Esse init guess funciona para todos os rho's dentro do range.
-        initGuess = [3., 3., 3., 0.04]
+        init_guess = [3., 3., 3., 0.04]
 
         particles_momenta = sc.fsolve(
             func=eos.quarks_momenta,
-            x0=initGuess,
+            x0=init_guess,
             args=quarks_momenta_parameters)
 
         quarks_momenta = np.asarray(particles_momenta[:3])      # [k_u, k_d, k_s]
@@ -101,14 +104,13 @@ def generateEoSTable(b_qcd, g_mg_ratio):
 
         particles_density_formated = ("{0:.4f}"*4).format(*particles_density)
 
-        chem_potential = (energy + pressure)/(rho)
+        chem_potential = (energy + pressure)/rho
 
         i_line = ([rho] +
                   [energy] +
                   [pressure] +
-                  [chem_potential] +
-                  particles_density +
-                  [str(particles_momenta)]
+                  [chem_potential]
+                  # + particles_density +[str(particles_momenta)]
                   )
 
         print(output_formaters.format(*i_line))

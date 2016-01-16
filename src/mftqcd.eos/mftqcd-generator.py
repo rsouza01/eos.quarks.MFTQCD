@@ -29,30 +29,32 @@ import mftqcd as eos
 
 
 def usage():
-    '''
+    """
     Shows the program usage
-    :return:
-    '''
-    print (
+    """
+    print(
         "Usage: \n" +
         "    mftqcd-generator.py -f=<gen|u|l>\n")
 
 
 def get_cl_parameters(argv):
-    '''
+    """
     Extracts the command line parameters.
     :param argv:
     :return:
-    '''
+    """
 
     program_function = 0
 
     try:
-        opts, args = getopt.getopt(argv, "hf:", ["help", "function="])
+        opts, args = getopt.getopt(argv, "hf:b:r:", ["help", "function=", "b_qcd=", "qcd_ratio="])
     except getopt.GetoptError as err:
         print(err)
         usage()
         sys.exit(2)
+
+    b_qcd = 0
+    ratio = 1
 
     for opt, arg in opts:
 
@@ -67,28 +69,36 @@ def get_cl_parameters(argv):
             elif arg == "l":
                 program_function = 2
 
+        elif opt in ("-b", "--b_qcd"):
+            # Generate the EoS
+            b_qcd = float(arg)
+
+        elif opt in ("-r", "--qcd_ratio"):
+            # Generate the EoS
+            ratio = float(arg)
+
         elif opt == '-h':
             usage()
             exit(0)
         else:
             assert False, "Unhandled exception."
 
-    return program_function
+    return program_function, b_qcd, ratio
+
 
 def main(argv):
 
-    initTime = datetime.now()
+    init_time = datetime.now()
 
-    program_function = get_cl_parameters(argv)
+    cl_parameters, b_qcd, ratio = get_cl_parameters(argv)
 
-    eos.fFuncMain(program_function)
+    eos.func_main(cl_parameters, b_qcd, ratio)
 
-    endTime = datetime.now()
-    print ("\n\n\n================================================")
-    print ("Time elapsed: %d ms." % ((endTime - initTime).microseconds))
-    print ("Done!")
-    print ("================================================")
-
+    end_time = datetime.now()
+    print("\n\n\n" + "="*100)
+    print("Time elapsed: %d ms." % (end_time - init_time).microseconds)
+    print("Done!")
+    print("="*100)
 
 
 if __name__ == "__main__":

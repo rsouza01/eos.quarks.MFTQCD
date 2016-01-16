@@ -25,21 +25,21 @@ from enum import Enum
 
 fm = 5.07e-3
 
-'''
-Here come the nucleons.
-'''
 
 class Nucleons(Enum):
+    """
+    Here come the nucleons.
+    """
     proton = 0
     neutron = 1
     
 nucleons_masses = np.array([938., 939.])
 
 
-'''
-Quarks are ordered here from lower to higher masses.
-'''
 class Quarks(Enum):
+    """
+    Quarks are ordered here from lower to higher masses.
+    """
     up = 0
     down = 1
     strange = 2
@@ -52,7 +52,6 @@ Quarks masses
 Source: https://en.wikipedia.org/wiki/Quark :-(
 """
 quark_masses = np.array([5., 7., 150., 1290., 4200., 173000.]) * fm
-
 
 
 class Leptons(Enum):

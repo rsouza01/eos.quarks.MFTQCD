@@ -13,7 +13,8 @@ for _FILE_NAME in ../eos/*.csv; do
     extension="${full_filename##*.}"
     filename="${full_filename%.*}"
 
-    output=../eos.conv/${filename}.CGS.csv
+    # output=../eos.conv.CGS/${filename}.CGS.csv
+    output=../eos.conv.NUC/${filename}.NUC.csv
     
     plot_title=${aux3/_XI_/;XI=}
 
