@@ -95,10 +95,14 @@ def main(argv):
     eos.func_main(cl_parameters, b_qcd, ratio)
 
     end_time = datetime.now()
-    print("\n\n\n" + "="*100)
-    print("Time elapsed: %d ms." % (end_time - init_time).microseconds)
-    print("Done!")
-    print("="*100)
+
+    print_footer = False
+
+    if print_footer:
+        print("\n\n\n" + "#" + "="*100)
+        print("#"+"Time elapsed: %d ms." % (end_time - init_time).microseconds)
+        print("#"+"Done!")
+        print("#"+"="*100)
 
 
 if __name__ == "__main__":

@@ -39,32 +39,45 @@ import scipy.optimize as sc
 # Constants
 # ================================================================================================
 # header = ["rho", "energy", "pressure", "mu_B", "n_u", "n_d", "n_s", "n_e", "k_i"]
-header = ["rho", "energy", "pressure", "mu_B"]
+header = ["energy", "pressure", "rho", "mu_B", "quark_s_fraction"]
 
 number_output = len(header)
 
 output_formaters_header = "{: >20} " * number_output
-output_formaters = "{: >20} " * number_output
+output_formaters = "{: >20}," * number_output
 
 
 def print_header():
     separator = "=" * 20
     separators = [separator] * len(header)
 
-    print(output_formaters_header.format(*separators))
-    print(output_formaters_header.format(*header))
-    print(output_formaters_header.format(*separators))
+    print("#"+output_formaters_header.format(*separators))
+    print("#"+output_formaters_header.format(*header))
+    print("#"+output_formaters_header.format(*separators))
 
 
 def print_footer():
     print_header()
 
 
+def get_quarks_density(particles_momenta):
+
+    gammaq = 2.
+
+    fator = (gammaq/(2*cmath.pi**2.))
+
+    n_u = fator * particles_momenta[0]**3
+    n_d = fator * particles_momenta[1]**3
+    n_s = fator * particles_momenta[2]**3
+
+    return n_u, n_d, n_s
+
+
 def generateEoSTable(b_qcd, g_mg_ratio):
 
     print_header()
 
-    steps = 45 # original
+    steps = 45  # original
     # steps = 10 # pra testes
     # for rho in np.linspace(0.15, .36, 21):
     # for rho in np.linspace(0.10, 4.5, divisoes):
@@ -104,15 +117,26 @@ def generateEoSTable(b_qcd, g_mg_ratio):
 
         particles_density_formated = ("{0:.4f}"*4).format(*particles_density)
 
-        chem_potential = (energy + pressure)/rho
+        chem_potential_factor = 2.5
 
-        i_line = ([rho] +
-                  [energy] +
-                  [pressure] +
-                  [chem_potential]
-                  # + particles_density +[str(particles_momenta)]
-                  )
+        chem_potential = chem_potential_factor * (energy + pressure)/rho
 
-        print(output_formaters.format(*i_line))
+        n_u, n_d, n_s = get_quarks_density(particles_momenta)
+
+        n_B = (n_u + n_d + n_s)/3
+
+        fraction_quark_s = n_s / n_B
+
+        # i_line = ([rho] +
+        #           [energy] +
+        #           [pressure] +
+        #           [chem_potential]
+        #           # + particles_density +[str(particles_momenta)]
+        #           )
+
+        print("%f, %f, %f, %f, %f" % (
+            energy, pressure, rho, chem_potential, fraction_quark_s))
+
+        # print(output_formaters.format(*i_line))
 
     print_footer()

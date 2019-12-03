@@ -48,11 +48,11 @@ def println(message):
 
 
 def print_program_header(program_function, b_qcd, g_mg_ratio):
-    println("=" * 100)
-    println("MFTQCD EOS file generator - " + str(program_function))
-    println("b_qcd = %f, g_mg_ratio = %f" % (b_qcd, g_mg_ratio))
+    println("#"+"=" * 100)
+    println("#"+" MFTQCD EOS file generator - " + str(program_function))
+    println("#"+" b_qcd = %f, g_mg_ratio = %f" % (b_qcd, g_mg_ratio))
 
-    println("=" * 100)
+    println("#"+"=" * 100)
 
 
 def print_header():

@@ -63,18 +63,18 @@ Energy
 """
 
 
-def eos_energy(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
+def eos_energy(rho, b_qcd, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
     """
     Energy density.
     :param rho: Baryonic density
-    :param B_QCD: Bag constant
+    :param b_qcd: Bag constant
     :param g_mg_ratio: g / m_G
     :param p_quarks_momenta: Quarks momenta
     :param p_electron_momentum: Electron momentum
     :return:
     """
 
-    ret = (27. / 16.) * fator1 * g_mg_ratio ** 2. * rho ** 2. + B_QCD + \
+    ret = (27. / 16.) * fator1 * g_mg_ratio ** 2. * rho ** 2. + b_qcd + \
         energy_quarks(p_quarks_momenta) + \
         energy_electrons(p_electron_momentum)
 
@@ -114,18 +114,22 @@ Pressure
 """
 
 
-def eos_pressure(rho, B_QCD, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
+def eos_pressure(rho, b_qcd, g_mg_ratio, p_quarks_momenta, p_electron_momentum):
     """
     Pressure.
     :param rho: Baryonic density
-    :param B_QCD: Bag constant
+    :param b_qcd: Bag constant
     :param g_mg_ratio: g / m_G
     :param p_quarks_momenta: Quarks momenta
     :param p_electron_momentum: Electron momentum
     :return:
     """
+    # print("Termos -> ratio = %f, b_qcd=%f, pressure_quarks=%f, pressure_eletrons=%f" % (
+    #     (27./16.) * fator1 * g_mg_ratio**2. * rho ** 2., b_qcd,
+    #     pressure_quarks(p_quarks_momenta),
+    #     pressure_electron(p_electron_momentum)))
 
-    pressure = (27./16.) * fator1 * g_mg_ratio**2. * rho ** 2. - B_QCD + \
+    pressure = (27./16.) * fator1 * g_mg_ratio**2. * rho ** 2. - b_qcd + \
         pressure_quarks(p_quarks_momenta) + pressure_electron(p_electron_momentum)
                      
     return pressure
